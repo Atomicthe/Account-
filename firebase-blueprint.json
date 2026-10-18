@@ -1,0 +1,118 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and global accounting preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Authenticated user identifier" },
+        "email": { "type": "string", "description": "User email address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "currency": { "type": "string", "description": "Default currency symbol or code" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": ["userId", "createdAt"]
+    },
+    "Account": {
+      "title": "Account",
+      "description": "Financial wallet or account such as Cash, Bank, Credit Card",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Account ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "description": "Account display name" },
+        "type": { "type": "string", "enum": ["CASH", "BANK", "CREDIT_CARD", "E_WALLET", "SAVINGS"], "description": "Type of account" },
+        "balance": { "type": "number", "description": "Current balance" },
+        "initialBalance": { "type": "number", "description": "Initial balance" },
+        "currency": { "type": "string", "description": "Account currency" },
+        "icon": { "type": "string", "description": "Material icon identifier" },
+        "color": { "type": "string", "description": "Hex color string" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": ["id", "userId", "name", "type", "balance", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Bookkeeping entry for expense, income, or transfer",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Transaction ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "type": { "type": "string", "enum": ["EXPENSE", "INCOME", "TRANSFER"], "description": "Transaction type" },
+        "amount": { "type": "number", "description": "Monetary amount" },
+        "accountId": { "type": "string", "description": "Source account ID" },
+        "toAccountId": { "type": "string", "description": "Destination account ID if transfer" },
+        "category": { "type": "string", "description": "Primary category" },
+        "subCategory": { "type": "string", "description": "Optional sub-category" },
+        "date": { "type": "string", "description": "Date formatted YYYY-MM-DD" },
+        "timestampMs": { "type": "number", "description": "Epoch millisecond for range queries and sorting" },
+        "note": { "type": "string", "description": "User note or description" },
+        "merchant": { "type": "string", "description": "Payee or merchant name" },
+        "tags": { "type": "string", "description": "Comma separated or serialized tags" },
+        "stamp": { "type": "string", "enum": ["NONE", "PAID", "APPROVED", "RECEIPT", "VIP"], "description": "Retro stamp type" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": ["id", "userId", "type", "amount", "accountId", "category", "date", "timestampMs", "createdAt"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Monthly overall or category-specific spending target",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Budget ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "category": { "type": "string", "description": "Category name or ALL for overall budget" },
+        "amount": { "type": "number", "description": "Budget target amount limit" },
+        "month": { "type": "string", "description": "Target month YYYY-MM" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": ["id", "userId", "category", "amount", "month", "createdAt"]
+    },
+    "RecurringBill": {
+      "title": "RecurringBill",
+      "description": "Recurring periodic bill or income template",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Recurring bill ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "name": { "type": "string", "description": "Bill name" },
+        "amount": { "type": "number", "description": "Bill amount" },
+        "type": { "type": "string", "enum": ["EXPENSE", "INCOME"], "description": "Bill type" },
+        "category": { "type": "string", "description": "Category" },
+        "accountId": { "type": "string", "description": "Default account ID" },
+        "frequency": { "type": "string", "enum": ["MONTHLY", "WEEKLY", "YEARLY"], "description": "Frequency" },
+        "dueDay": { "type": "number", "description": "Due day of month" },
+        "isActive": { "type": "boolean", "description": "Whether active" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server creation timestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server update timestamp" }
+      },
+      "required": ["id", "userId", "name", "amount", "type", "category", "accountId", "frequency", "dueDay", "isActive", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Root user profile document"
+    },
+    "/users/{userId}/accounts/{accountId}": {
+      "schema": { "$ref": "#/entities/Account" },
+      "description": "User accounts/wallets"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "User expense, income, and transfer ledger entries"
+    },
+    "/users/{userId}/budgets/{budgetId}": {
+      "schema": { "$ref": "#/entities/Budget" },
+      "description": "User monthly category and overall budgets"
+    },
+    "/users/{userId}/recurring/{recurringId}": {
+      "schema": { "$ref": "#/entities/RecurringBill" },
+      "description": "User recurring periodic bills and subscriptions"
+    }
+  }
+}

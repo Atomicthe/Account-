@@ -1,0 +1,6 @@
+{
+  "name": "時光帳本",
+  "description": "復古牛皮紙質手帳記帳 App，融合市面頂尖記帳軟體的多帳戶、分類預算、統計報表、蓋章紀錄、週期記帳等強大功能。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,12 +1,10 @@
 package com.example
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,27 +31,20 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.credentials.CredentialManager
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.auth.AuthManager
 import com.example.ui.components.triggerHapticFeedback
 import com.example.ui.screens.AccountsScreen
 import com.example.ui.screens.AddTransactionSheet
@@ -61,9 +52,6 @@ import com.example.ui.screens.AnalyticsScreen
 import com.example.ui.screens.BudgetScreen
 import com.example.ui.screens.LedgerScreen
 import com.example.ui.screens.RecurringScreen
-import com.example.ui.screens.SignInScreen
-import com.example.ui.theme.CourierPrimeFont
-import com.example.ui.theme.ParchmentCard
 import com.example.ui.theme.ParchmentSurface
 import com.example.ui.theme.PlayfairFont
 import com.example.ui.theme.RetroLedgerTheme
@@ -72,12 +60,8 @@ import com.example.ui.theme.VintageGold
 import com.example.ui.theme.WarmSepia
 import com.example.ui.viewmodel.LedgerViewModel
 import com.example.ui.viewmodel.LedgerViewModelFactory
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -85,69 +69,20 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             RetroLedgerTheme {
-                AppRootContent()
+                val context = LocalContext.current
+                val isBiometricEnabled by remember { com.example.data.preferences.SettingsManager.isBiometricEnabled(context) }.collectAsState(initial = false)
+                var isUnlocked by remember { mutableStateOf(false) }
+
+                if (!isBiometricEnabled || isUnlocked) {
+                    MainAppScreen(userId = "local_user")
+                } else {
+                    com.example.ui.screens.LockScreen(
+                        onUnlock = { isUnlocked = true },
+                        activity = this
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-fun AppRootContent() {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val credentialManager = remember { CredentialManager.create(context) }
-    var currentUser by remember { mutableStateOf<FirebaseUser?>(Firebase.auth.currentUser) }
-
-    DisposableEffect(Unit) {
-        val listener = FirebaseAuth.AuthStateListener { auth ->
-            currentUser = auth.currentUser
-        }
-        Firebase.auth.addAuthStateListener(listener)
-        onDispose {
-            Firebase.auth.removeAuthStateListener(listener)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        if (currentUser == null) {
-            AuthManager.attemptAutoSignIn(
-                context = context,
-                credentialManager = credentialManager,
-                onAuthSuccess = {
-                    currentUser = Firebase.auth.currentUser
-                },
-                onUnauthenticated = {},
-                scope = scope
-            )
-        }
-    }
-
-    var isGuest by remember { mutableStateOf(false) }
-
-    if (currentUser == null && !isGuest) {
-        SignInScreen(
-            onAuthSuccess = {
-                currentUser = Firebase.auth.currentUser
-            },
-            onGuestClick = {
-                isGuest = true
-            }
-        )
-    } else {
-        MainAppScreen(
-            userId = if (isGuest) "guest_local_user" else currentUser!!.uid,
-            onSignOut = {
-                isGuest = false
-                AuthManager.signOut(
-                    context = context,
-                    credentialManager = credentialManager,
-                    scope = scope,
-                    onSignOutComplete = {
-                        currentUser = null
-                    }
-                )
-            }
-        )
     }
 }
 
@@ -159,8 +94,7 @@ data class NavTabItem(
 
 @Composable
 fun MainAppScreen(
-    userId: String,
-    onSignOut: () -> Unit
+    userId: String
 ) {
     val context = LocalContext.current
     val viewModel: LedgerViewModel = viewModel(
@@ -211,7 +145,7 @@ fun MainAppScreen(
                             Text(
                                 text = item.title,
                                 fontFamily = PlayfairFont,
-                                fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 fontSize = 11.5.sp
                             )
                         },
@@ -262,7 +196,9 @@ fun MainAppScreen(
                     1 -> AnalyticsScreen(viewModel = viewModel)
                     2 -> BudgetScreen(viewModel = viewModel)
                     3 -> AccountsScreen(viewModel = viewModel)
-                    4 -> RecurringScreen(viewModel = viewModel, onSignOutClicked = onSignOut)
+                    4 -> RecurringScreen(
+                        viewModel = viewModel
+                    )
                 }
             }
 

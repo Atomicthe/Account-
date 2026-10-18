@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">時光帳本</string>
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID_HERE</string>
 </resources>

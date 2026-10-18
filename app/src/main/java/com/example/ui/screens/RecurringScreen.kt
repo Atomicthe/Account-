@@ -41,6 +41,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,7 +70,6 @@ import java.util.Locale
 @Composable
 fun RecurringScreen(
     viewModel: LedgerViewModel,
-    onSignOutClicked: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -357,15 +358,24 @@ fun RecurringScreen(
                         Text("匯出本月記帳 CSV 檔案", color = WarmSepia, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
 
-                    Button(
-                        onClick = onSignOutClicked,
-                        colors = ButtonDefaults.buttonColors(containerColor = SealingWaxRed.copy(alpha = 0.12f)),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth().height(42.dp).testTag("sign_out_button")
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(imageVector = Icons.Default.ExitToApp, contentDescription = null, tint = SealingWaxRed, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("登出帳本帳戶", color = SealingWaxRed, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("開啟生物辨識/指紋解鎖", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                        
+                        val scope = rememberCoroutineScope()
+                        val isBiometricEnabled by com.example.data.preferences.SettingsManager.isBiometricEnabled(context).collectAsState(initial = false)
+                        
+                        Switch(
+                            checked = isBiometricEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    com.example.data.preferences.SettingsManager.setBiometricEnabled(context, enabled)
+                                }
+                            }
+                        )
                     }
                 }
             }

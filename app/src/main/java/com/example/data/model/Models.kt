@@ -1,18 +1,16 @@
 package com.example.data.model
 
-import com.google.firebase.Timestamp
-import com.google.firebase.firestore.DocumentId
-import com.google.firebase.firestore.IgnoreExtraProperties
-import com.google.firebase.firestore.ServerTimestamp
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@IgnoreExtraProperties
+@Entity(tableName = "users")
 data class UserProfile(
-    val userId: String = "",
+    @PrimaryKey val userId: String,
     val email: String = "",
     val displayName: String = "",
     val currency: String = "NT$",
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )
 
 enum class AccountType(val label: String, val iconName: String) {
@@ -23,9 +21,9 @@ enum class AccountType(val label: String, val iconName: String) {
     SAVINGS("懷舊存摺", "savings")
 }
 
-@IgnoreExtraProperties
+@Entity(tableName = "accounts")
 data class LedgerAccount(
-    val id: String = "",
+    @PrimaryKey val id: String,
     val userId: String = "",
     val name: String = "",
     val type: String = AccountType.CASH.name,
@@ -34,8 +32,8 @@ data class LedgerAccount(
     val currency: String = "NT$",
     val icon: String = "account_balance_wallet",
     val color: String = "#7A3E26",
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )
 
 enum class TransactionType(val label: String) {
@@ -52,9 +50,9 @@ enum class StampType(val label: String, val colorHex: String) {
     VIP("SPECIAL", "#C8963E")
 }
 
-@IgnoreExtraProperties
+@Entity(tableName = "transactions")
 data class LedgerTransaction(
-    val id: String = "",
+    @PrimaryKey val id: String,
     val userId: String = "",
     val type: String = TransactionType.EXPENSE.name,
     val amount: Double = 0.0,
@@ -68,19 +66,19 @@ data class LedgerTransaction(
     val merchant: String = "",
     val tags: String = "", // comma-separated e.g. "#日常,#咖啡"
     val stamp: String = StampType.PAID.name,
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )
 
-@IgnoreExtraProperties
+@Entity(tableName = "budgets")
 data class LedgerBudget(
-    val id: String = "",
+    @PrimaryKey val id: String,
     val userId: String = "",
     val category: String = "ALL", // "ALL" or specific category
     val amount: Double = 0.0,
     val month: String = "", // "YYYY-MM"
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )
 
 enum class BillFrequency(val label: String) {
@@ -89,9 +87,9 @@ enum class BillFrequency(val label: String) {
     YEARLY("每年")
 }
 
-@IgnoreExtraProperties
+@Entity(tableName = "recurring_bills")
 data class RecurringBill(
-    val id: String = "",
+    @PrimaryKey val id: String,
     val userId: String = "",
     val name: String = "",
     val amount: Double = 0.0,
@@ -101,8 +99,8 @@ data class RecurringBill(
     val frequency: String = BillFrequency.MONTHLY.name,
     val dueDay: Long = 1L, // 1..31
     val isActive: Boolean = true,
-    @ServerTimestamp val createdAt: Timestamp? = null,
-    @ServerTimestamp val updatedAt: Timestamp? = null
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis()
 )
 
 data class CategoryDef(

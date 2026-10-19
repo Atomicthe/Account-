@@ -66,6 +66,9 @@ data class LedgerTransaction(
     val merchant: String = "",
     val tags: String = "", // comma-separated e.g. "#日常,#咖啡"
     val stamp: String = StampType.PAID.name,
+    val currency: String = "NT$",
+    val originalAmount: Double = 0.0,
+    val travelId: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

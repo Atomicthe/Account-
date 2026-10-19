@@ -98,12 +98,14 @@ fun ParchmentCard(
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     borderColor: Color = MaterialTheme.colorScheme.outline,
     elevation: Dp = 2.dp,
+    onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
     Card(
         modifier = modifier
             .shadow(elevation, RoundedCornerShape(12.dp))
-            .border(BorderStroke(1.dp, borderColor), RoundedCornerShape(12.dp)),
+            .border(BorderStroke(1.dp, borderColor), RoundedCornerShape(12.dp))
+            .let { if (onClick != null) it.clickable(onClick = onClick) else it },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
@@ -268,25 +270,29 @@ fun RetroCalculatorPad(
                 row.forEach { key ->
                     val isAction = key in listOf("AC", "⌫", "+", "-", "=")
                     val isEquals = key == "="
+
+                    // Minimalist MUJI outline: unified, simple, clean neutral border
+                    val outlineColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+
                     val btnBg = when {
-                        isEquals -> SealingWaxRed
-                        isAction -> VintageGold.copy(alpha = 0.25f)
+                        isEquals -> WarmSepia
+                        isAction -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.65f)
                         else -> MaterialTheme.colorScheme.surface
                     }
                     val textColor = when {
                         isEquals -> ParchmentSurface
-                        isAction -> WarmSepia
+                        isAction -> MaterialTheme.colorScheme.onSurfaceVariant
                         else -> MaterialTheme.colorScheme.onSurface
                     }
 
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(52.dp)
+                            .height(48.dp)
                             .testTag("calc_key_$key")
-                            .shadow(2.dp, RoundedCornerShape(10.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                            .background(btnBg, RoundedCornerShape(10.dp))
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(btnBg)
+                            .border(1.dp, outlineColor, RoundedCornerShape(8.dp))
                             .clickable {
                                 handlePress(key)
                                 if (key == "=") onDone()
@@ -296,9 +302,9 @@ fun RetroCalculatorPad(
                         Text(
                             text = key,
                             color = textColor,
-                            fontFamily = if (isAction) PlayfairFont else CourierPrimeFont,
+                            fontFamily = if (isAction && !isEquals) PlayfairFont else CourierPrimeFont,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
+                            fontSize = 17.sp
                         )
                     }
                 }

@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.sp
 
 private val RetroLightColorScheme = lightColorScheme(
     primary = WarmSepia,
@@ -65,6 +66,44 @@ fun RetroLedgerTheme(
         typography = RetroTypography,
         content = content
     )
+}
+
+val LocalFontSizeOffset = androidx.compose.runtime.compositionLocalOf { 0 }
+
+@Composable
+fun ThemedApp(
+    darkTheme: Boolean = false,
+    fontSizeOffset: Int = 0, // 0, 2, 4, 6, 8
+    content: @Composable () -> Unit
+) {
+    val typography = RetroTypography.run {
+        copy(
+            bodyLarge = bodyLarge.copy(fontSize = (bodyLarge.fontSize.value + fontSizeOffset).sp),
+            bodyMedium = bodyMedium.copy(fontSize = (bodyMedium.fontSize.value + fontSizeOffset).sp),
+            bodySmall = bodySmall.copy(fontSize = (bodySmall.fontSize.value + fontSizeOffset).sp),
+            titleLarge = titleLarge.copy(fontSize = (titleLarge.fontSize.value + fontSizeOffset).sp),
+            titleMedium = titleMedium.copy(fontSize = (titleMedium.fontSize.value + fontSizeOffset).sp),
+        )
+    }
+    
+    val colorScheme = if (darkTheme) RetroDarkColorScheme else RetroLightColorScheme
+    val currentDensity = androidx.compose.ui.platform.LocalDensity.current
+    val fontScaleFactor = 1.0f + (fontSizeOffset * 0.08f)
+    val scaledDensity = androidx.compose.ui.unit.Density(
+        density = currentDensity.density,
+        fontScale = currentDensity.fontScale * fontScaleFactor
+    )
+    
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalFontSizeOffset provides fontSizeOffset,
+        androidx.compose.ui.platform.LocalDensity provides scaledDensity
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = typography,
+            content = content
+        )
+    }
 }
 
 @Composable

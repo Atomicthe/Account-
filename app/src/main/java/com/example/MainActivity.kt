@@ -58,6 +58,9 @@ import com.example.ui.theme.RetroLedgerTheme
 import com.example.ui.theme.SealingWaxRed
 import com.example.ui.theme.VintageGold
 import com.example.ui.theme.WarmSepia
+import com.example.data.preferences.SettingsManager
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import com.example.ui.viewmodel.LedgerViewModel
 import com.example.ui.viewmodel.LedgerViewModelFactory
 
@@ -68,18 +71,27 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            RetroLedgerTheme {
-                val context = LocalContext.current
-                val isBiometricEnabled by remember { com.example.data.preferences.SettingsManager.isBiometricEnabled(context) }.collectAsState(initial = false)
+            val context = LocalContext.current
+            val isDarkMode by SettingsManager.isDarkModeEnabled(context).collectAsState(initial = false)
+            val fontSizeOffset by SettingsManager.getFontSizeOffset(context).collectAsState(initial = 0)
+
+            com.example.ui.theme.ThemedApp(
+                darkTheme = isDarkMode,
+                fontSizeOffset = fontSizeOffset
+            ) {
+                val isBiometricEnabled by remember { SettingsManager.isBiometricEnabled(context) }.collectAsState(initial = false)
+                val password by remember { SettingsManager.getPassword(context) }.collectAsState(initial = null)
                 var isUnlocked by remember { mutableStateOf(false) }
 
-                if (!isBiometricEnabled || isUnlocked) {
-                    MainAppScreen(userId = "local_user")
-                } else {
+                if ((isBiometricEnabled || !password.isNullOrEmpty()) && !isUnlocked) {
                     com.example.ui.screens.LockScreen(
                         onUnlock = { isUnlocked = true },
-                        activity = this
+                        activity = this,
+                        password = password,
+                        isBiometricEnabled = isBiometricEnabled
                     )
+                } else {
+                    MainAppScreen(userId = "local_user")
                 }
             }
         }
@@ -162,26 +174,28 @@ fun MainAppScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    triggerHapticFeedback(context, 25)
-                    showAddSheet = true
-                },
-                containerColor = SealingWaxRed,
-                contentColor = ParchmentSurface,
-                elevation = FloatingActionButtonDefaults.elevation(6.dp),
-                shape = CircleShape,
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(6.dp, CircleShape)
-                    .border(1.5.dp, VintageGold, CircleShape)
-                    .testTag("fab_add_transaction")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "新增記帳",
-                    modifier = Modifier.size(30.dp)
-                )
+            if (selectedTab == 0) {
+                FloatingActionButton(
+                    onClick = {
+                        triggerHapticFeedback(context, 25)
+                        showAddSheet = true
+                    },
+                    containerColor = SealingWaxRed,
+                    contentColor = ParchmentSurface,
+                    elevation = FloatingActionButtonDefaults.elevation(6.dp),
+                    shape = CircleShape,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .shadow(6.dp, CircleShape)
+                        .border(1.5.dp, VintageGold, CircleShape)
+                        .testTag("fab_add_transaction")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "新增記帳",
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -202,12 +216,17 @@ fun MainAppScreen(
                 }
             }
 
+            val selectedTravel by viewModel.selectedTravel.collectAsState()
+
             if (showAddSheet) {
                 AddTransactionSheet(
                     accounts = accounts,
+                    initialCurrency = selectedTravel?.currency ?: "NT$",
+                    initialTravelId = selectedTravel?.id ?: "",
                     onDismiss = { showAddSheet = false },
-                    onSaveTransaction = { type, amount, accountId, toAccountId, category, date, note, merchant, tags, stamp ->
+                    onSaveTransaction = { id, type, amount, accountId, toAccountId, category, date, note, merchant, tags, currency, originalAmount, travelId ->
                         viewModel.addTransaction(
+                            id = id,
                             type = type,
                             amount = amount,
                             accountId = accountId,
@@ -217,7 +236,9 @@ fun MainAppScreen(
                             note = note,
                             merchant = merchant,
                             tags = tags,
-                            stamp = stamp
+                            currency = currency,
+                            originalAmount = originalAmount,
+                            travelId = travelId
                         )
                     }
                 )

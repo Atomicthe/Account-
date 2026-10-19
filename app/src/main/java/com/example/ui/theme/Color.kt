@@ -2,28 +2,27 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Retro Warm Parchment Palette
-val ParchmentBg = Color(0xFFF7F2E7)
-val ParchmentSurface = Color(0xFFFCF9F2)
-val ParchmentCard = Color(0xFFF1E6D2)
-val ParchmentCardAlt = Color(0xFFEADBCE)
-val ParchmentBorder = Color(0xFFDAC7AC)
-val EspressoInk = Color(0xFF2E1C12)
+// Japanese Fresh & Crisp Palette
+val ParchmentBg = Color(0xFFFDFCF8)
+val ParchmentSurface = Color(0xFFFFFFFF)
+val ParchmentCard = Color(0xFFF0F4F8)
+val EspressoInk = Color(0xFF333333)
 val EspressoSecondary = Color(0xFF6B584C)
 val EspressoMuted = Color(0xFF9E8D80)
 
-val WarmSepia = Color(0xFF834324)
-val WarmSepiaLight = Color(0xFFEAD9CE)
-val VintageGold = Color(0xFFC79532)
-val VintageGoldLight = Color(0xFFF8EFCF)
+val WarmSepia = Color(0xFF6B8E85) 
+val WarmSepiaLight = Color(0xFFD4E2D8)
+val VintageGold = Color(0xFF7094A0) 
+val VintageGoldLight = Color(0xFFD6E3E8)
 
-val SealingWaxRed = Color(0xFFA62B2B)
-val SealingWaxRedLight = Color(0xFFFBE4E4)
-val ForestGreen = Color(0xFF285C42)
-val ForestGreenLight = Color(0xFFDFF0E6)
+val SealingWaxRed = Color(0xFFD97757) 
+val SealingWaxRedLight = Color(0xFFFBE8E1)
+val ForestGreen = Color(0xFF6B8E85) 
+val ForestGreenLight = Color(0xFFD4E2D8)
 
-val NavyInk = Color(0xFF233D4D)
+val NavyInk = Color(0xFF4A5C6A)
 val PerforatedLine = Color(0xFFD3C1A5)
+val ParchmentBorder = Color(0xFFD3C1A5)
 
 // Dark Theme Variants
 val DarkEspressoBg = Color(0xFF1C130E)

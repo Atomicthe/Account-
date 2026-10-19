@@ -276,8 +276,7 @@ fun AccountsScreen(
                             date = todayStr,
                             note = transferNote.ifBlank { "帳戶互轉" },
                             merchant = "內部資金調度",
-                            tags = "#轉帳",
-                            stamp = StampType.RECEIPT
+                            tags = "#轉帳"
                         )
                         showTransferDialog = false
                         transferAmount = ""
